@@ -1,0 +1,34 @@
+program      ::= statement*
+
+statement    ::= function_definition
+
+function_definition ::= identifier LPAREN variable RPAREN EQUAL expression
+
+expression   ::= term ( (PLUS | MINUS) term )*
+
+term         ::= factor ( (MUL | DIV) factor )*
+
+factor       ::= NUMBER 
+            | NUMBER variable
+            | NUMBER function_call
+            | NUMBER trig_function
+            | variable 
+            | variable LPAREN expression RPAREN
+            | variable function_call
+            | variable trig_function
+            | LPAREN expression RPAREN
+            | function_call
+            | trig_function
+            | exponential
+            | variable exponential
+            | NUMBER exponential
+
+identifier   ::= [a-zA-Z]+
+
+variable     ::= [a-zA-Z]
+
+function_call ::= identifier LPAREN expression RPAREN
+
+trig_function ::= identifier LPAREN expression RPAREN
+
+exponential ::= EXPONENTIAL LPAREN expression RPAREN
