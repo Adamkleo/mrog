@@ -57,14 +57,22 @@ class Parser:
         return node
 
     def term(self):
-        node = self.factor()
+        node = self.power()
         while self.current_token.type in (TokenType.MUL, TokenType.DIV):
             token = self.current_token
             if token.type == TokenType.MUL:
                 self.eat(TokenType.MUL)
             elif token.type == TokenType.DIV:
                 self.eat(TokenType.DIV)
-            node = ('BINARY_OP', token, node, self.factor())
+            node = ('BINARY_OP', token, node, self.power())
+        return node
+
+    def power(self):
+        node = self.factor()
+        while self.current_token.type == TokenType.POW:
+            token = self.current_token
+            self.eat(TokenType.POW)
+            node = ('BINARY_OP', token, node, self.power())
         return node
 
     def factor(self):

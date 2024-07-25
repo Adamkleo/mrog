@@ -1,1 +1,1 @@
-g(x) = 2xsin(x)
+f(x) = exp(cos(x^exp(x^2 + 2)))
