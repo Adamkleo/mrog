@@ -8,6 +8,16 @@ class Lexer:
         self.text = text
         self.pos = 0
         self.current_char = self.text[self.pos] if self.text else None
+        self.symbols = {
+            '+': TokenType.PLUS,
+            '-': TokenType.MINUS,
+            '*': TokenType.MUL,
+            '/': TokenType.DIV,
+            '^': TokenType.POW,
+            '=': TokenType.EQUAL,
+            '(': TokenType.LPAREN,
+            ')': TokenType.RPAREN
+        }
 
     def error(self):
         raise Exception('Invalid character')
@@ -75,37 +85,11 @@ class Lexer:
             if self.current_char.isalpha():
                 return self.identifier_or_function()
             
-            if self.current_char == '+':
+            if self.current_char in self.symbols:
+                token_type = self.symbols[self.current_char]
+                char = self.current_char
                 self.advance()
-                return Token(TokenType.PLUS, '+')
-            
-            if self.current_char == '-':
-                self.advance()
-                return Token(TokenType.MINUS, '-')
-            
-            if self.current_char == '*':
-                self.advance()
-                return Token(TokenType.MUL, '*')
-            
-            if self.current_char == '/':
-                self.advance()
-                return Token(TokenType.DIV, '/')
-            
-            if self.current_char == '^':
-                self.advance()
-                return Token(TokenType.POW, '^')
-            
-            if self.current_char == '=':
-                self.advance()
-                return Token(TokenType.EQUAL, '=')
-
-            if self.current_char == '(':
-                self.advance()
-                return Token(TokenType.LPAREN, '(')
-
-            if self.current_char == ')':
-                self.advance()
-                return Token(TokenType.RPAREN, ')')
+                return Token(token_type, char)
             
             if self.current_char == '#':
                 self.advance()

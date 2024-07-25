@@ -1,7 +1,5 @@
 
 
-OPERATORS = {'+', '-', '*', '/', '^'}
-
 TRIG_FUNCTIONS = {
     'sin', 'cos', 'tan', 'csc', 'sec', 'cot',  # basic trigonometric functions
     'sinh', 'cosh', 'tanh', 'csch', 'sech', 'coth',  # hyperbolic functions
