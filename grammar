@@ -1,34 +1,34 @@
-program      ::= statement*
+<program>           ::= <statement>*
 
-statement    ::= function_definition
+<statement>         ::= <function_definition>
 
-function_definition ::= identifier LPAREN variable RPAREN EQUAL expression
+<function_definition> ::= <identifier> "(" <variable> ")" "=" <expression>
 
-expression   ::= term ( (PLUS | MINUS) term )*
+<expression>        ::= <term> <rest_expression>
 
-term         ::= factor ( (MUL | DIV) factor )*
+<rest_expression>   ::= "+" <term> <rest_expression>
+                      | "-" <term> <rest_expression>
+                      | ε
 
-factor       ::= NUMBER 
-            | NUMBER variable
-            | NUMBER function_call
-            | NUMBER trig_function
-            | variable 
-            | variable LPAREN expression RPAREN
-            | variable function_call
-            | variable trig_function
-            | LPAREN expression RPAREN
-            | function_call
-            | trig_function
-            | exponential
-            | variable exponential
-            | NUMBER exponential
+<term>              ::= <factor> <rest_term>
 
-identifier   ::= [a-zA-Z]+
+<rest_term>         ::= "*" <factor> <rest_term>
+                      | "/" <factor> <rest_term>
+                      | ε
 
-variable     ::= [a-zA-Z]
+<factor>            ::= <primary> <rest_factor>
 
-function_call ::= identifier LPAREN expression RPAREN
+<rest_factor>       ::= "^" <primary> <rest_factor>
+                      | ε
 
-trig_function ::= identifier LPAREN expression RPAREN
+<primary>           ::= "TRIG_FUNCTION(" <expression> ")"
+                      | "EXP(" <expression> ")"
+                      | <number>
+                      | <variable>
+                      | "(" <expression> ")"
 
-exponential ::= EXPONENTIAL LPAREN expression RPAREN
+<number>            ::= [0-9]+
+
+<variable>          ::= x | y | z
+
+<identifier>        ::= [a-zA-Z][a-zA-Z]*
