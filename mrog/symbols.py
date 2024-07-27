@@ -6,3 +6,5 @@ TRIG_FUNCTIONS = {
     'asin', 'acos', 'atan', 'acsc', 'asec', 'acot',  # inverse trigonometric functions
     'asinh', 'acosh', 'atanh', 'acsch', 'asech', 'acoth'  # inverse hyperbolic functions
 }
+
+VARIABLES = {'x', 'y', 'z'}

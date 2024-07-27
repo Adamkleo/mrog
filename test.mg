@@ -1,1 +1,2 @@
-f(x) = exp(cos(x^exp(x^2 + 2)))
+# f(x) = exp(cos(x^exp(x^2 + 2)))
+

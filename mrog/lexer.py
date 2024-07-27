@@ -1,6 +1,6 @@
 import re
 
-from .symbols import TRIG_FUNCTIONS
+from .symbols import TRIG_FUNCTIONS, VARIABLES
 from .token import Token, TokenType
 
 class Lexer:
@@ -55,8 +55,20 @@ class Lexer:
                 result += self.current_char
                 self.advance()
         return Token(TokenType.NUMBER, float(result))
+    
+    def variable(self):
+        token_type = TokenType.VARIABLE
+        char = self.current_char
+        self.advance()
+        return Token(token_type, char)
+    
+    def symbol(self):
+        token_type = self.symbols[self.current_char]
+        char = self.current_char
+        self.advance()
+        return Token(token_type, char)
 
-    def identifier_or_function(self):
+    def function(self):
         """Handle identifiers, trigonometric functions, and variables."""
         result = ''
         while self.current_char is not None and self.current_char.isalpha():
@@ -69,8 +81,7 @@ class Lexer:
             return Token(TokenType.EXPONENTIAL, result)
         elif self.current_char == '(':
             return Token(TokenType.FUNCTION, result)
-        else:
-            return Token(TokenType.VARIABLE, result)
+
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)."""
@@ -82,14 +93,14 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.number()
 
-            if self.current_char.isalpha():
-                return self.identifier_or_function()
+            if self.current_char.isalpha() and self.current_char not in VARIABLES:
+                return self.function()
             
+            if self.current_char in VARIABLES:
+                return self.variable()
+
             if self.current_char in self.symbols:
-                token_type = self.symbols[self.current_char]
-                char = self.current_char
-                self.advance()
-                return Token(token_type, char)
+                return self.symbol()
             
             if self.current_char == '#':
                 self.advance()
