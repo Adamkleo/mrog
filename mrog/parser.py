@@ -39,7 +39,7 @@ class Parser:
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.EQUAL)
         expression = self.parse_expression()
-        return {'type': 'FunctionDefinition', 'name': function_name, 'variable': function_variable, 'expression': expression}
+        return {'type': 'FunctionDefinition', 'name': function_name, 'function_variable': function_variable, 'expression': expression}
 
     def parse_expression(self):
         term = self.parse_term()
@@ -108,5 +108,16 @@ class Parser:
             expr = self.parse_expression()
             self.eat(TokenType.RPAREN)
             return expr
+        elif token.type == TokenType.FUNCTION:
+            return self.parse_function_call()
         else:
             self.error("Invalid primary expression")
+
+
+    def parse_function_call(self):
+        function_name = self.current_token.value
+        self.eat(TokenType.FUNCTION)
+        self.eat(TokenType.LPAREN)
+        arg = self.parse_expression()
+        self.eat(TokenType.RPAREN)
+        return {'type': 'FunctionCall', 'name': function_name, 'argument': arg}

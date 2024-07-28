@@ -5,7 +5,6 @@ from mrog.lexer import Lexer
 from mrog.parser import Parser
 
 
-
 def main():
     parser = argparse.ArgumentParser(description="Process .mg files with the mrog lexer.")
     parser.add_argument("filename", help="The .mg file to process")
@@ -20,11 +19,14 @@ def main():
         return
 
 
+    functions = {}
 
     lexer = Lexer(input_text)
     parser = Parser(lexer)
     ast = parser.parse()
     print(ast)
+
+
 
 
             

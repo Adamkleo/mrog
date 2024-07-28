@@ -26,6 +26,9 @@
                       | <number>
                       | <variable>
                       | "(" <expression> ")"
+                      | <function_call>
+
+<function_call>     ::= <identifier> "(" <expression> ")"
 
 <number>            ::= [0-9]+
 
