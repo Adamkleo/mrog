@@ -68,19 +68,23 @@ class Lexer:
         self.advance()
         return Token(token_type, char)
 
-    def function(self):
+    def alpha(self):
         """Handle identifiers, trigonometric functions, and variables."""
         result = ''
         while self.current_char is not None and self.current_char.isalpha():
             result += self.current_char
             self.advance()
-
-        if result in TRIG_FUNCTIONS:
+        
+        if len(result) == 1:
+            return Token(TokenType.IDENTIFIER, result)
+        elif result in TRIG_FUNCTIONS:
             return Token(TokenType.TRIG_FUNCTION, result)
         elif result == 'exp':
             return Token(TokenType.EXPONENTIAL, result)
-        elif self.current_char == '(':
-            return Token(TokenType.FUNCTION, result)
+        else:
+            self.error()
+        
+        
 
 
     def get_next_token(self):
@@ -93,11 +97,8 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.number()
 
-            if self.current_char.isalpha() and self.current_char not in VARIABLES:
-                return self.function()
-            
-            if self.current_char in VARIABLES:
-                return self.variable()
+            if self.current_char.isalpha():
+                return self.alpha()
 
             if self.current_char in self.symbols:
                 return self.symbol()
@@ -111,5 +112,4 @@ class Lexer:
             self.error()
 
         return Token(TokenType.EOF, None)
-
 

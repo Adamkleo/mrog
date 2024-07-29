@@ -1,9 +1,7 @@
 from enum import Enum, auto
 
 class TokenType(Enum):
-    FUNCTION = auto()
     TRIG_FUNCTION = auto()
-    VARIABLE = auto()
     PLUS = auto()
     MINUS = auto()
     MUL = auto()
@@ -11,6 +9,7 @@ class TokenType(Enum):
     POW = auto()
     OPERATOR = auto()
     EXPONENTIAL = auto()
+    IDENTIFIER = auto()
     NUMBER = auto()
     EQUAL = auto()
     LPAREN = auto()  # Left Parenthesis '('

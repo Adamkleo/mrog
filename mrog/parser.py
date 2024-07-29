@@ -1,5 +1,6 @@
 from .lexer import Lexer
 from .token import TokenType, Token
+from .exceptions import InvalidVariableError
 
 class Parser:
     def __init__(self, lexer):
@@ -32,10 +33,10 @@ class Parser:
 
     def parse_function_definition(self):
         function_name = self.current_token.value
-        self.eat(TokenType.FUNCTION)
+        self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.LPAREN)
         function_variable = self.current_token.value
-        self.eat(TokenType.VARIABLE)
+        self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.EQUAL)
         expression = self.parse_expression()
@@ -100,24 +101,26 @@ class Parser:
         elif token.type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
             return {'type': 'Number', 'value': token.value}
-        elif token.type == TokenType.VARIABLE:
-            self.eat(TokenType.VARIABLE)
-            return {'type': 'Variable', 'value': token.value}
+        elif token.type == TokenType.IDENTIFIER:
+            return self.parse_identifier()
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             expr = self.parse_expression()
             self.eat(TokenType.RPAREN)
             return expr
-        elif token.type == TokenType.FUNCTION:
-            return self.parse_function_call()
         else:
             self.error("Invalid primary expression")
 
 
-    def parse_function_call(self):
-        function_name = self.current_token.value
-        self.eat(TokenType.FUNCTION)
-        self.eat(TokenType.LPAREN)
-        arg = self.parse_expression()
-        self.eat(TokenType.RPAREN)
-        return {'type': 'FunctionCall', 'name': function_name, 'argument': arg}
+
+    def parse_identifier(self):
+        identifier = self.current_token.value
+        self.eat(TokenType.IDENTIFIER)
+        if self.current_token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            arg = self.parse_expression()
+            self.eat(TokenType.RPAREN)
+            return {'type': 'FunctionCall', 'name': identifier, 'argument': arg}
+            
+        else:
+            return {'type': 'Variable', 'value': identifier}

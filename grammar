@@ -2,7 +2,7 @@
 
 <statement>         ::= <function_definition>
 
-<function_definition> ::= <identifier> "(" <variable> ")" "=" <expression>
+<function_definition> ::= <identifier> "(" <identifier> ")" "=" <expression>
 
 <expression>        ::= <term> <rest_expression>
 
