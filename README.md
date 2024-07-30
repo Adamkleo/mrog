@@ -1,3 +1,11 @@
 # mrog
 
-Mathprog inspired language built using python.
+A Mathematical language inspired by Wolfram Alpha-inspired & Mathprog, written in Python.
+
+Currently working on correctly tokenizing and parsing expressions and error handling.
+
+## Features to be Added
+- [ ] Built-in functions
+- [ ] Matrices
+- [ ] Multi-variable functions
+- [ ] TBD
