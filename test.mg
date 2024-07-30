@@ -1,1 +1,1 @@
-f(x) = 2*f(sin(2*x))*y
+f(x) = x^x^x^x^x^x

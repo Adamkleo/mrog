@@ -3,7 +3,6 @@ class InvalidVariableError(Exception):
     def __init__(self, variable, line, 
                  message="Invalid variable encountered"):
         self.variable = variable
-        self.line = line
         self.message = f"Error in line {line}: {message}: {variable}. Only x, y, z are allowed."
         super().__init__(self.message)
 
@@ -12,7 +11,6 @@ class InvalidIdentifierError(Exception):
     def __init__(self, identifier, line, 
                  message="Invalid identifier encountered"):
         self.identifier = identifier
-        self.line = line
         self.message = f"Error in line {line}: {message}: {identifier}."
         super().__init__(self.message)
 
@@ -21,7 +19,6 @@ class InvalidArgumentError(Exception):
     def __init__(self, variable, line, 
                  message="Invalid argument encountered"):
         self.variable = variable
-        self.line = line
         self.message = f"Error in line {line}: {message}: {variable}. Only x, y, z are allowed."
         super().__init__(self.message)
 
@@ -30,6 +27,12 @@ class InvalidExpressionVariableError(Exception):
     def __init__(self, character, line, 
                  message="Expression variable does not match function variable"):
         self.character = character
-        self.line = line
         self.message = f"Error in line {line}: {message}: {character}."
+        super().__init__(self.message)
+
+class InvalidSyntaxError(Exception):
+    """Raised when an invalid syntax is encountered"""
+    def __init__(self, line, 
+                 message="Invalid syntax"):
+        self.message = f"Error in line {line}: {message}."
         super().__init__(self.message)

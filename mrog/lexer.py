@@ -79,6 +79,14 @@ class Lexer:
             return Token(TokenType.TRIG_FUNCTION, result)
         elif result == 'exp':
             return Token(TokenType.EXPONENTIAL, result)
+        elif result == 'sqrt':
+            return Token(TokenType.SQRT, result)
+        elif result == 'log':
+            return Token(TokenType.LOG, result)
+        elif result == 'ln':
+            return Token(TokenType.LN, result)
+        elif result == 'abs':
+            return Token(TokenType.ABS, result)
         else:
             return Token(TokenType.IDENTIFIER, result)
         

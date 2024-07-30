@@ -10,9 +10,7 @@ class Parser:
         self.current_token = lexer.get_next_token()
         self.current_line = 0
         self.current_statement = None
-
-    def error(self, message="Syntax error"):
-        raise Exception(message)
+    
 
     def advance(self):
         self.current_token = self.lexer.get_next_token()
@@ -21,7 +19,8 @@ class Parser:
         if self.current_token.type == token_type:
             self.advance()
         else:
-            self.error(f"Expected token {token_type}, got {self.current_token.type}")
+            raise InvalidSyntaxError(self.current_line)
+
 
     def parse(self):
         return self.parse_program()
@@ -100,23 +99,16 @@ class Parser:
             operator = self.current_token
             self.eat(TokenType.POW)
             next_primary = self.parse_primary()
+            next_primary = self.parse_rest_factor(next_primary)  # Recursively handle right-associative power
             initial_primary = {'type': 'BinaryExpression', 'left': initial_primary, 'operator': operator.value, 'right': next_primary}
         return initial_primary
 
+
     def parse_primary(self):
         token = self.current_token
-        if token.type == TokenType.TRIG_FUNCTION:
-            self.eat(TokenType.TRIG_FUNCTION)
-            self.eat(TokenType.LPAREN)
-            expr = self.parse_expression()
-            self.eat(TokenType.RPAREN)
-            return {'type': 'TrigFunction', 'function': token.value, 'expression': expr}
-        elif token.type == TokenType.EXPONENTIAL:
-            self.eat(TokenType.EXPONENTIAL)
-            self.eat(TokenType.LPAREN)
-            expr = self.parse_expression()
-            self.eat(TokenType.RPAREN)
-            return {'type': 'ExpFunction', 'expression': expr}
+
+        if token.type in (TokenType.EXPONENTIAL, TokenType.SQRT, TokenType.LN, TokenType.ABS, TokenType.TRIG_FUNCTION):
+            return self.parse_math_function(token)
         elif token.type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
             return {'type': 'Number', 'value': token.value}
@@ -128,7 +120,7 @@ class Parser:
             self.eat(TokenType.RPAREN)
             return expr
         else:
-            self.error("Invalid primary expression")
+            raise InvalidSyntaxError(self.current_line)
 
 
 
@@ -151,3 +143,11 @@ class Parser:
                 raise InvalidExpressionVariableError(identifier, self.current_line)
             
             return {'type': 'Variable', 'value': identifier}
+        
+
+    def parse_math_function(self, token):
+        self.eat(token.type)
+        self.eat(TokenType.LPAREN)
+        expr = self.parse_expression()
+        self.eat(TokenType.RPAREN)
+        return {'type': token.value, 'expression': expr}
