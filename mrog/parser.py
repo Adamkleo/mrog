@@ -1,11 +1,15 @@
 from .lexer import Lexer
 from .token import TokenType, Token
-from .exceptions import InvalidVariableError
+from .exceptions import *
+from .symbols import VARIABLES
+from .statement import Function
 
 class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = lexer.get_next_token()
+        self.current_line = 0
+        self.current_statement = None
 
     def error(self, message="Syntax error"):
         raise Exception(message)
@@ -25,21 +29,36 @@ class Parser:
     def parse_program(self):
         statements = []
         while self.current_token.type != TokenType.EOF:
-            statements.append(self.parse_statement())
+            self.current_line += 1
+            statements.append((self.parse_statement()))
         return statements
 
     def parse_statement(self):
-        return self.parse_function_definition()
+        if self.current_token.type == TokenType.IDENTIFIER:
+            self.current_statement = Function()
+            return self.parse_function_definition()
+
 
     def parse_function_definition(self):
         function_name = self.current_token.value
+        self.current_statement.name = function_name
+
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.LPAREN)
+        
         function_variable = self.current_token.value
+        self.current_statement.variable = function_variable
+
+        if function_variable not in VARIABLES:
+            raise InvalidArgumentError(function_variable, self.current_line)
+        
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.EQUAL)
+
         expression = self.parse_expression()
+        self.current_statement.expression = expression
+
         return {'type': 'FunctionDefinition', 'name': function_name, 'function_variable': function_variable, 'expression': expression}
 
     def parse_expression(self):
@@ -119,8 +138,16 @@ class Parser:
         if self.current_token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             arg = self.parse_expression()
+            non_function_variables = VARIABLES.difference(set(self.current_statement.variable))
+            for var in non_function_variables:
+                if var in arg:
+                    raise InvalidVariableError(var, self.current_line)
             self.eat(TokenType.RPAREN)
             return {'type': 'FunctionCall', 'name': identifier, 'argument': arg}
-            
         else:
+            if identifier not in VARIABLES:
+                raise InvalidVariableError(identifier, self.current_line)
+            if identifier != self.current_statement.variable:
+                raise InvalidExpressionVariableError(identifier, self.current_line)
+            
             return {'type': 'Variable', 'value': identifier}

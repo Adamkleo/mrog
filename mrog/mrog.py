@@ -3,7 +3,7 @@ import argparse
 
 from mrog.lexer import Lexer
 from mrog.parser import Parser
-
+from mrog.exceptions import *
 
 def main():
     parser = argparse.ArgumentParser(description="Process .mg files with the mrog lexer.")
@@ -20,11 +20,18 @@ def main():
 
 
     functions = {}
-
-    lexer = Lexer(input_text)
-    parser = Parser(lexer)
-    ast = parser.parse()
-    print(ast)
+    ast = None
+    try:
+        lexer = Lexer(input_text)
+        parser = Parser(lexer)
+        ast = parser.parse()
+    except (InvalidVariableError, InvalidIdentifierError, \
+            InvalidExpressionVariableError, InvalidArgumentError, \
+                ) as e:
+        print(e)
+        
+    if ast:
+        print(ast)
 
 
 

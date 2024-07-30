@@ -1,6 +1,6 @@
 import re
 
-from .symbols import TRIG_FUNCTIONS, VARIABLES
+from .symbols import TRIG_FUNCTIONS
 from .token import Token, TokenType
 
 class Lexer:
@@ -75,14 +75,12 @@ class Lexer:
             result += self.current_char
             self.advance()
         
-        if len(result) == 1:
-            return Token(TokenType.IDENTIFIER, result)
-        elif result in TRIG_FUNCTIONS:
+        if result in TRIG_FUNCTIONS:
             return Token(TokenType.TRIG_FUNCTION, result)
         elif result == 'exp':
             return Token(TokenType.EXPONENTIAL, result)
         else:
-            self.error()
+            return Token(TokenType.IDENTIFIER, result)
         
         
 
