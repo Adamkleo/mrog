@@ -21,14 +21,17 @@
 <rest_factor>       ::= "^" <primary> <rest_factor>
                       | ε
 
-<primary>           ::= "TRIG_FUNCTION(" <expression> ")"
-                      | "EXP(" <expression> ")"
+<primary>           ::= <math_function> "(" <expression> ")"
                       | <number>
                       | <variable>
                       | "(" <expression> ")"
-                      | <function_call>
+                      | <identifier> "(" <expression> ")"
 
-<function_call>     ::= <identifier> "(" <expression> ")"
+<math_function>     ::= TRIG_FUNCTION
+                      | LN
+                      | EXP
+                      | ABS
+
 
 <number>            ::= [0-9]+
 
