@@ -22,16 +22,18 @@
                       | ε
 
 <primary>           ::= <math_function> "(" <expression> ")"
-                      | <number>
-                      | <variable>
-                      | "(" <expression> ")"
+                      | <number> <postfix_operator>
+                      | <variable> <postfix_operator>
+                      | "(" <expression> ")" <postfix_operator>
                       | <identifier> "(" <expression> ")"
+
+<postfix_operator>  ::= "!" <postfix_operator>
+                      | ε
 
 <math_function>     ::= TRIG_FUNCTION
                       | LN
                       | EXP
                       | ABS
-
 
 <number>            ::= [0-9]+
 

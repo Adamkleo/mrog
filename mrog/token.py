@@ -16,6 +16,7 @@ class TokenType(Enum):
     LN = auto()
     EXPONENTIAL = auto()
 
+    FACTORIAL = auto()
 
     IDENTIFIER = auto()
     NUMBER = auto()

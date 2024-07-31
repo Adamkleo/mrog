@@ -16,7 +16,8 @@ class Lexer:
             '^': TokenType.POW,
             '=': TokenType.EQUAL,
             '(': TokenType.LPAREN,
-            ')': TokenType.RPAREN
+            ')': TokenType.RPAREN,
+            '!' : TokenType.FACTORIAL
         }
 
     def error(self):

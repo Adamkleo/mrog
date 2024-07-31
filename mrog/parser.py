@@ -111,16 +111,24 @@ class Parser:
             return self.parse_math_function(token)
         elif token.type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
-            return {'type': 'Number', 'value': token.value}
+            return self.parse_postfix({'type': 'Number', 'value': token.value})
         elif token.type == TokenType.IDENTIFIER:
-            return self.parse_identifier()
+            identifier_node = self.parse_identifier()
+            return self.parse_postfix(identifier_node)
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             expr = self.parse_expression()
             self.eat(TokenType.RPAREN)
-            return expr
+            return self.parse_postfix(expr)
         else:
             raise InvalidSyntaxError(self.current_line)
+
+    def parse_postfix(self, node):
+        if self.current_token.type == TokenType.FACTORIAL:
+            self.eat(TokenType.FACTORIAL)
+            node = {'type': 'Factorial', 'operand': node}
+        return node
+
 
 
 
