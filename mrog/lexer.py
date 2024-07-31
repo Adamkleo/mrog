@@ -1,24 +1,15 @@
 import re
 
-from .symbols import TRIG_FUNCTIONS
+from .symbols import TRIG_FUNCTIONS, MATH_FUNCTIONS, BUILTIN_FUNCTIONS, SYMBOLS 
 from .token import Token, TokenType
 
 class Lexer:
+    
     def __init__(self, text):
         self.text = text
         self.pos = 0
         self.current_char = self.text[self.pos] if self.text else None
-        self.symbols = {
-            '+': TokenType.PLUS,
-            '-': TokenType.MINUS,
-            '*': TokenType.MUL,
-            '/': TokenType.DIV,
-            '^': TokenType.POW,
-            '=': TokenType.EQUAL,
-            '(': TokenType.LPAREN,
-            ')': TokenType.RPAREN,
-            '!' : TokenType.FACTORIAL
-        }
+
 
     def error(self):
         raise Exception('Invalid character')
@@ -64,7 +55,7 @@ class Lexer:
         return Token(token_type, char)
     
     def symbol(self):
-        token_type = self.symbols[self.current_char]
+        token_type = SYMBOLS[self.current_char]
         char = self.current_char
         self.advance()
         return Token(token_type, char)
@@ -78,21 +69,13 @@ class Lexer:
         
         if result in TRIG_FUNCTIONS:
             return Token(TokenType.TRIG_FUNCTION, result)
-        elif result == 'exp':
-            return Token(TokenType.EXPONENTIAL, result)
-        elif result == 'sqrt':
-            return Token(TokenType.SQRT, result)
-        elif result == 'log':
-            return Token(TokenType.LOG, result)
-        elif result == 'ln':
-            return Token(TokenType.LN, result)
-        elif result == 'abs':
-            return Token(TokenType.ABS, result)
+        elif result in MATH_FUNCTIONS:
+            return Token(MATH_FUNCTIONS[result], result)
+        elif result in BUILTIN_FUNCTIONS:
+            return Token(BUILTIN_FUNCTIONS[result], result)
         else:
             return Token(TokenType.IDENTIFIER, result)
-        
-        
-
+    
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)."""
@@ -107,7 +90,7 @@ class Lexer:
             if self.current_char.isalpha():
                 return self.alpha()
 
-            if self.current_char in self.symbols:
+            if self.current_char in SYMBOLS:
                 return self.symbol()
             
             if self.current_char == '#':

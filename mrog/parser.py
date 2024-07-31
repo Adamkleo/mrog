@@ -5,6 +5,7 @@ from .symbols import VARIABLES
 from .statement import Function
 
 class Parser:
+
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = lexer.get_next_token()
@@ -33,10 +34,32 @@ class Parser:
         return statements
 
     def parse_statement(self):
-        if self.current_token.type == TokenType.IDENTIFIER:
-            self.current_statement = Function()
-            return self.parse_function_definition()
+        """Parse a statement"""
 
+        # Check if the statement is a function definition
+        if self.current_token.type == TokenType.IDENTIFIER:
+            # Create a new function object for the function being defined
+            self.current_statement = Function()
+            # Parse the function definition
+            return self.parse_function_definition()
+        
+        # Check if the statement is a print statement
+        if self.current_token.type == TokenType.PRINT:
+            # Set the current statement type to 'print'
+            self.current_statement = 'print'
+            # Parse the print statement
+            return self.parse_print_statement()
+        
+    def parse_print_statement(self):
+        # Allow print(f) or print(f(x)) or print(f(expression))
+        self.eat(TokenType.PRINT)
+        self.eat(TokenType.LPAREN)
+
+        expression = self.parse_expression()
+
+        self.eat(TokenType.RPAREN)
+        
+        return {'type': 'PrintStatement', 'expression': expression}
 
     def parse_function_definition(self):
         function_name = self.current_token.value
@@ -130,27 +153,54 @@ class Parser:
         return node
 
 
-
-
     def parse_identifier(self):
+        """Parse an identifier, which can be a variable or a function call."""
+        
+        # Get identifier
         identifier = self.current_token.value
         self.eat(TokenType.IDENTIFIER)
+
+        derivative = False
+        if self.current_token.type == TokenType.PRIME:
+            derivative = True
+            self.eat(TokenType.PRIME)
+
+        # Check if it is a function call or a variable
         if self.current_token.type == TokenType.LPAREN:
+
+            # Parse opening parenthesis of function call
             self.eat(TokenType.LPAREN)
+            # Get function call argument
             arg = self.parse_expression()
-            non_function_variables = VARIABLES.difference(set(self.current_statement.variable))
-            for var in non_function_variables:
-                if var in arg:
-                    raise InvalidVariableError(var, self.current_line)
+            
+            # Check if argument contains any variables that are not in the function definition, only if not in print statement
+            if self.current_statement != 'print':
+                non_function_variables = VARIABLES.difference(set(self.current_statement.variable))
+                for var in non_function_variables:
+                    if var in arg:
+                        raise InvalidVariableError(var, self.current_line)
+                    
+            # Parse closing parenthesis of function call
             self.eat(TokenType.RPAREN)
+
+            if derivative:
+                return {'type': 'Derivative', 'function': identifier, 'argument': arg}
+
+            # Return function call node
             return {'type': 'FunctionCall', 'name': identifier, 'argument': arg}
         else:
+
+            # Check if variable is valid (x, y, z)
             if identifier not in VARIABLES:
                 raise InvalidVariableError(identifier, self.current_line)
-            if identifier != self.current_statement.variable:
+            
+            # Check if variable is the same as the function variable in which it is used, only if not in print statement
+            if self.current_statement != 'print' and identifier != self.current_statement.variable:
                 raise InvalidExpressionVariableError(identifier, self.current_line)
             
+            # Return variable node
             return {'type': 'Variable', 'value': identifier}
+
         
 
     def parse_math_function(self, token):

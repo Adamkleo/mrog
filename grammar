@@ -1,8 +1,13 @@
 <program>           ::= <statement>*
 
 <statement>         ::= <function_definition>
+                      | <built_in_function>
 
-<function_definition> ::= <identifier> "(" <identifier> ")" "=" <expression>
+<built_in_function> ::= PRINT "(" <expression> ")"
+
+
+
+<function_definition> ::= ID "(" ID ")" "=" <expression>
 
 <expression>        ::= <term> <rest_expression>
 
@@ -25,7 +30,11 @@
                       | <number> <postfix_operator>
                       | <variable> <postfix_operator>
                       | "(" <expression> ")" <postfix_operator>
-                      | <identifier> "(" <expression> ")"
+                      | <identifier>
+
+<identifier>        ::= ID "(" <expression> ")"
+                      | ID "'" "(" <expression> ")" 
+                      | ID
 
 <postfix_operator>  ::= "!" <postfix_operator>
                       | ε
@@ -38,5 +47,3 @@
 <number>            ::= [0-9]+
 
 <variable>          ::= x | y | z
-
-<identifier>        ::= [a-zA-Z][a-zA-Z]*
