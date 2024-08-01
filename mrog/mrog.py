@@ -27,7 +27,7 @@ def main():
         ast = parser.parse()
     except (InvalidVariableError, InvalidIdentifierError, \
             InvalidExpressionVariableError, InvalidArgumentError, \
-            InvalidSyntaxError
+            InvalidSyntaxError, UnknownSymbolError
             ) as e:
         print(e)
         

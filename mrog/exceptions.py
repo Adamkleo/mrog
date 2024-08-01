@@ -36,3 +36,9 @@ class InvalidSyntaxError(Exception):
                  message="Invalid syntax"):
         self.message = f"Error in line {line}: {message}."
         super().__init__(self.message)
+
+class UnknownSymbolError(Exception):
+    """Raised when an unknown symbol is encountered"""
+    def __init__(self, symbol):
+        self.message = f"Unknown symbol encountered: {symbol}"
+        super().__init__(self.message)

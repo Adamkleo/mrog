@@ -32,6 +32,7 @@ class Parser:
             self.current_line += 1
             statements.append((self.parse_statement()))
         return statements
+    
 
     def parse_statement(self):
         """Parse a statement"""
@@ -49,6 +50,8 @@ class Parser:
             self.current_statement = 'print'
             # Parse the print statement
             return self.parse_print_statement()
+        
+        raise InvalidSyntaxError(self.current_line)
         
     def parse_print_statement(self):
         # Allow print(f) or print(f(x)) or print(f(expression))
@@ -136,8 +139,7 @@ class Parser:
             self.eat(TokenType.NUMBER)
             return self.parse_postfix({'type': 'Number', 'value': token.value})
         elif token.type == TokenType.IDENTIFIER:
-            identifier_node = self.parse_identifier()
-            return self.parse_postfix(identifier_node)
+            return self.parse_identifier()
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             expr = self.parse_expression()
@@ -198,6 +200,9 @@ class Parser:
             if self.current_statement != 'print' and identifier != self.current_statement.variable:
                 raise InvalidExpressionVariableError(identifier, self.current_line)
             
+            if self.current_token.type == TokenType.FACTORIAL:
+                self.parse_postfix(identifier)
+
             # Return variable node
             return {'type': 'Variable', 'value': identifier}
 
