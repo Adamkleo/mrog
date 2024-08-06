@@ -9,3 +9,9 @@ Currently working on correctly tokenizing and parsing expressions and error hand
 - [ ] Matrices
 - [ ] Multi-variable functions
 - [ ] TBD
+  
+
+## Dev notes
+- [ ] Add factorial to variables and paren expressions
+- [ ] Improve error handling
+

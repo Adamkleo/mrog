@@ -11,12 +11,8 @@ class TokenType(Enum):
     # Comparison operators
     EQUAL = auto()
 
-    # Standard ath Functions
-    SQRT = auto()
-    ABS = auto()
-    LOG = auto()
-    LN = auto()
-    EXPONENTIAL = auto()
+    # Standard math Functions
+    MATH_FUNCTION = auto()
     TRIG_FUNCTION = auto()
 
     # Built-in functions
@@ -30,10 +26,11 @@ class TokenType(Enum):
     IDENTIFIER = auto()
     NUMBER = auto()
     
-    # Parentheses
+    # Symbols
     LPAREN = auto()  # Left Parenthesis '('
     RPAREN = auto()  # Right Parenthesis ')'
-    
+    COMMA = auto()   # Comma ','
+
     # End of File
     EOF = auto()     # End of File
 

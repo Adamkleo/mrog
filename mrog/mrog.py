@@ -3,6 +3,8 @@ import argparse
 
 from mrog.lexer import Lexer
 from mrog.parser import Parser
+from mrog.interpreter import Interpreter
+from mrog.semantic import SemanticAnalyzer
 from mrog.exceptions import *
 
 def main():
@@ -24,10 +26,13 @@ def main():
     try:
         lexer = Lexer(input_text)
         parser = Parser(lexer)
-        ast = parser.parse()
+        semantic_analyzer = SemanticAnalyzer(parser)
+        interpreter = Interpreter(semantic_analyzer)
+        result = interpreter.interpret()
     except (InvalidVariableError, InvalidIdentifierError, \
             InvalidExpressionVariableError, InvalidArgumentError, \
-            InvalidSyntaxError, UnknownSymbolError
+            InvalidSyntaxError, UnknownSymbolError, UndefinedFunctionError, \
+            
             ) as e:
         print(e)
         

@@ -100,7 +100,7 @@ class Lexer:
             return Token(TokenType.TRIG_FUNCTION, result)
         # a math function
         elif result in MATH_FUNCTIONS:
-            return Token(MATH_FUNCTIONS[result], result)
+            return Token(TokenType.MATH_FUNCTION, result)
         # a built-in function
         elif result in BUILTIN_FUNCTIONS:
             return Token(BUILTIN_FUNCTIONS[result], result)

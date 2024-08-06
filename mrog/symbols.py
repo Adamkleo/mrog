@@ -9,6 +9,7 @@ TRIG_FUNCTIONS = {
 
 VARIABLES = {'x', 'y', 'z'}
 
+MATH_FUNCTIONS = {'exp', 'sqrt', 'log', 'ln', 'abs'}
 
 SYMBOLS = {
     '+': TokenType.PLUS,
@@ -20,16 +21,11 @@ SYMBOLS = {
     '(': TokenType.LPAREN,
     ')': TokenType.RPAREN,
     '!': TokenType.FACTORIAL,
-    "'": TokenType.PRIME
+    "'": TokenType.PRIME,
+    ',': TokenType.COMMA
 }
 
-MATH_FUNCTIONS = {
-    'exp': TokenType.EXPONENTIAL,
-    'sqrt': TokenType.SQRT,
-    'log': TokenType.LOG,
-    'ln': TokenType.LN,
-    'abs': TokenType.ABS
-}
+
 
 
 BUILTIN_FUNCTIONS = {

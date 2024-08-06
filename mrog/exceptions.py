@@ -42,3 +42,9 @@ class UnknownSymbolError(Exception):
     def __init__(self, symbol):
         self.message = f"Unknown symbol encountered: {symbol}"
         super().__init__(self.message)
+
+class UndefinedFunctionError(Exception):
+    """Raised when an invalid function is encountered"""
+    def __init__(self, function_name):
+        self.message = f"Undefined function {function_name}" 
+        super().__init__(self.message)

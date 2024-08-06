@@ -9,10 +9,11 @@ class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = lexer.get_next_token()
-        self.current_line = 0
+        self.current_line = 1
         self.current_statement = None
+        self.used_variables = {}
+        self.functions_called = {}
     
-
     def advance(self):
         self.current_token = self.lexer.get_next_token()
 
@@ -22,15 +23,17 @@ class Parser:
         else:
             raise InvalidSyntaxError(self.current_line)
 
-
     def parse(self):
         return self.parse_program()
 
     def parse_program(self):
         statements = []
         while self.current_token.type != TokenType.EOF:
-            self.current_line += 1
+            self.used_variables[self.current_line] = set()
+            self.functions_called[self.current_line] = set()
             statements.append((self.parse_statement()))
+            self.current_line += 1
+
         return statements
     
 
@@ -58,11 +61,11 @@ class Parser:
         self.eat(TokenType.PRINT)
         self.eat(TokenType.LPAREN)
 
-        expression = self.parse_expression()
+        argument = self.parse_identifier()
 
         self.eat(TokenType.RPAREN)
         
-        return {'type': 'PrintStatement', 'expression': expression}
+        return {'type': 'PrintStatement', 'argument': argument}
 
     def parse_function_definition(self):
         function_name = self.current_token.value
@@ -73,9 +76,6 @@ class Parser:
         
         function_variable = self.current_token.value
         self.current_statement.variable = function_variable
-
-        if function_variable not in VARIABLES:
-            raise InvalidArgumentError(function_variable, self.current_line)
         
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.RPAREN)
@@ -133,11 +133,11 @@ class Parser:
     def parse_primary(self):
         token = self.current_token
 
-        if token.type in (TokenType.EXPONENTIAL, TokenType.SQRT, TokenType.LN, TokenType.ABS, TokenType.TRIG_FUNCTION):
-            return self.parse_math_function(token)
-        elif token.type == TokenType.NUMBER:
+        if token.type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
             return self.parse_postfix({'type': 'Number', 'value': token.value})
+        elif token.type in (TokenType.MATH_FUNCTION, TokenType.TRIG_FUNCTION):
+            return self.parse_math_function(token)
         elif token.type == TokenType.IDENTIFIER:
             return self.parse_identifier()
         elif token.type == TokenType.LPAREN:
@@ -145,13 +145,14 @@ class Parser:
             expr = self.parse_expression()
             self.eat(TokenType.RPAREN)
             return self.parse_postfix(expr)
-        else:
+        else:  
             raise InvalidSyntaxError(self.current_line)
 
     def parse_postfix(self, node):
         if self.current_token.type == TokenType.FACTORIAL:
             self.eat(TokenType.FACTORIAL)
             node = {'type': 'Factorial', 'operand': node}
+            
         return node
 
 
@@ -170,17 +171,12 @@ class Parser:
         # Check if it is a function call or a variable
         if self.current_token.type == TokenType.LPAREN:
 
+            # Add the function to the list of functions called on the current line
+            self.functions_called[self.current_line].add(identifier)
             # Parse opening parenthesis of function call
             self.eat(TokenType.LPAREN)
             # Get function call argument
             arg = self.parse_expression()
-            
-            # Check if argument contains any variables that are not in the function definition, only if not in print statement
-            if self.current_statement != 'print':
-                non_function_variables = VARIABLES.difference(set(self.current_statement.variable))
-                for var in non_function_variables:
-                    if var in arg:
-                        raise InvalidVariableError(var, self.current_line)
                     
             # Parse closing parenthesis of function call
             self.eat(TokenType.RPAREN)
@@ -192,17 +188,7 @@ class Parser:
             return {'type': 'FunctionCall', 'name': identifier, 'argument': arg}
         else:
 
-            # Check if variable is valid (x, y, z)
-            if identifier not in VARIABLES:
-                raise InvalidVariableError(identifier, self.current_line)
-            
-            # Check if variable is the same as the function variable in which it is used, only if not in print statement
-            if self.current_statement != 'print' and identifier != self.current_statement.variable:
-                raise InvalidExpressionVariableError(identifier, self.current_line)
-            
-            if self.current_token.type == TokenType.FACTORIAL:
-                self.parse_postfix(identifier)
-
+            self.used_variables[self.current_line].add(identifier)
             # Return variable node
             return {'type': 'Variable', 'value': identifier}
 
@@ -210,7 +196,20 @@ class Parser:
 
     def parse_math_function(self, token):
         self.eat(token.type)
+
+        if token.value == 'log':
+            return self.parse_logarithm(token)
+        
         self.eat(TokenType.LPAREN)
-        expr = self.parse_expression()
+        argument = self.parse_expression()
         self.eat(TokenType.RPAREN)
-        return {'type': token.value, 'expression': expr}
+        return {'type': 'MathFunction', 'function': token.value, 'argument': argument}
+
+
+    def parse_logarithm(self, token):
+        self.eat(TokenType.LPAREN)
+        base = self.parse_expression()
+        self.eat(TokenType.COMMA)
+        argument = self.parse_expression()
+        self.eat(TokenType.RPAREN)
+        return {'type': 'MathFunction', 'function': token.value, 'base': base, 'argument': argument}
