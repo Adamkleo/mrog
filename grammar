@@ -3,8 +3,7 @@
 <statement>         ::= <function_definition>
                       | <built_in_function>
 
-<built_in_function> ::= PRINT "(" <expression> ")"
-
+<built_in_function> ::= PRINT "(" <identifier> ")"
 
 
 <function_definition> ::= ID "(" ID ")" "=" <expression>
@@ -31,18 +30,21 @@
                       | <variable> <postfix_operator>
                       | "(" <expression> ")" <postfix_operator>
                       | <identifier>
+                      | <logarithm>
 
 <identifier>        ::= ID "(" <expression> ")"
                       | ID "'" "(" <expression> ")" 
                       | ID
 
-<postfix_operator>  ::= "!" <postfix_operator>
+<postfix_operator>  ::= "!" 
                       | ε
 
 <math_function>     ::= TRIG_FUNCTION
                       | LN
                       | EXP
                       | ABS
+
+<logarithm>         ::= log '(' <expression> ',' <expression> ')' 
 
 <number>            ::= [0-9]+
 
