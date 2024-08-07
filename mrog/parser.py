@@ -2,7 +2,6 @@ from .lexer import Lexer
 from .token import TokenType, Token
 from .exceptions import *
 from .symbols import VARIABLES
-from .statement import Function
 
 class Parser:
 
@@ -10,7 +9,6 @@ class Parser:
         self.lexer = lexer
         self.current_token = lexer.get_next_token()
         self.current_line = 1
-        self.current_statement = None
         self.used_variables = {}
         self.functions_called = {}
     
@@ -21,7 +19,7 @@ class Parser:
         if self.current_token.type == token_type:
             self.advance()
         else:
-            raise InvalidSyntaxError(self.current_line)
+            raise InvalidSyntaxError(self.current_line, received=self.current_token.value, expected=token_type)
 
     def parse(self):
         return self.parse_program()
@@ -42,19 +40,15 @@ class Parser:
 
         # Check if the statement is a function definition
         if self.current_token.type == TokenType.IDENTIFIER:
-            # Create a new function object for the function being defined
-            self.current_statement = Function()
             # Parse the function definition
             return self.parse_function_definition()
         
         # Check if the statement is a print statement
         if self.current_token.type == TokenType.PRINT:
-            # Set the current statement type to 'print'
-            self.current_statement = 'print'
             # Parse the print statement
             return self.parse_print_statement()
         
-        raise InvalidSyntaxError(self.current_line)
+        raise InvalidSyntaxError(self.current_line, received=self.current_token.value, expected="function definition or print statement")
         
     def parse_print_statement(self):
         # Allow print(f) or print(f(x)) or print(f(expression))
@@ -62,27 +56,24 @@ class Parser:
         self.eat(TokenType.LPAREN)
 
         argument = self.parse_identifier()
-
+        
         self.eat(TokenType.RPAREN)
         
         return {'type': 'PrintStatement', 'argument': argument}
 
     def parse_function_definition(self):
         function_name = self.current_token.value
-        self.current_statement.name = function_name
 
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.LPAREN)
         
         function_variable = self.current_token.value
-        self.current_statement.variable = function_variable
         
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.EQUAL)
 
         expression = self.parse_expression()
-        self.current_statement.expression = expression
 
         return {'type': 'FunctionDefinition', 'name': function_name, 'function_variable': function_variable, 'expression': expression}
 
@@ -146,7 +137,7 @@ class Parser:
             self.eat(TokenType.RPAREN)
             return self.parse_postfix(expr)
         else:  
-            raise InvalidSyntaxError(self.current_line)
+            raise InvalidSyntaxError(self.current_line, received=token.value, expected="number, math function, trigonometric function, identifier, or left parenthesis")
 
     def parse_postfix(self, node):
         if self.current_token.type == TokenType.FACTORIAL:

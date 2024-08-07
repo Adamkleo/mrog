@@ -3,8 +3,8 @@ import argparse
 
 from mrog.lexer import Lexer
 from mrog.parser import Parser
-from mrog.interpreter import Interpreter
 from mrog.semantic import SemanticAnalyzer
+from mrog.interpreter import Interpreter
 from mrog.exceptions import *
 
 def main():
@@ -29,9 +29,13 @@ def main():
         semantic_analyzer = SemanticAnalyzer(parser)
         interpreter = Interpreter(semantic_analyzer)
         result = interpreter.interpret()
+        print(result)
+
+
     except (InvalidVariableError, InvalidIdentifierError, \
             InvalidExpressionVariableError, InvalidArgumentError, \
             InvalidSyntaxError, UnknownSymbolError, UndefinedFunctionError, \
+            InvalidPrintArgumentError, 
             
             ) as e:
         print(e)

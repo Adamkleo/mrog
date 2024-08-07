@@ -1,2 +1,3 @@
 f(x) = 2*x
-print(f(3+3))
+g(x) = 4*x + log(3, x^2)
+print(g(x))

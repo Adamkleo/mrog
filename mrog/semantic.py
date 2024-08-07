@@ -1,5 +1,4 @@
 from .symbols import VARIABLES
-from .function import Function
 from .exceptions import *
 
 
@@ -40,15 +39,15 @@ class SemanticAnalyzer:
         non_function_variables = VARIABLES.difference(set(function_variable))
         for var in non_function_variables:
             if var in self.parser.used_variables[self.current_line]:
-                raise InvalidExpressionVariableError(var, self.current_line)
+                raise InvalidExpressionVariableError(self.current_line, function_name, var, function_variable)
             
         # Check if any of the functions that are called in the current function expressions dont exist
         for function in self.parser.functions_called[self.current_line]:
             if function not in self.functions.keys():
-                raise UndefinedFunctionError(function)
+                raise UndefinedFunctionError(self.current_line, function)
 
         # Add function to functions dictionary
-        function = Function(function_name, function_variable, expression)
+        function = (function_variable, expression)
         self.functions[function_name] = function
 
 
@@ -62,11 +61,11 @@ class SemanticAnalyzer:
             function_name = print_arg['name']
             # Check if the function is defined
             if function_name not in self.functions.keys():
-                raise UndefinedFunctionError(function_name)
+                raise UndefinedFunctionError(self.current_line, function_name)
             
+        # Check if the argument is a function call by function name only. ie. print(f)
         if print_arg['type'] == 'Variable':
             if print_arg['value'] not in self.functions.keys():
-                raise UndefinedFunctionError(print_arg['value'])
-            
-        # Check if the argument is a number
-            
+                raise UndefinedFunctionError(self.current_line, print_arg['value'])
+
+

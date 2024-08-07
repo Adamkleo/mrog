@@ -40,9 +40,7 @@
                       | ε
 
 <math_function>     ::= TRIG_FUNCTION
-                      | LN
-                      | EXP
-                      | ABS
+                      | MATH_FUNCTION
 
 <logarithm>         ::= log '(' <expression> ',' <expression> ')' 
 
