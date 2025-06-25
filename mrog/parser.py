@@ -130,7 +130,7 @@ class Parser:
         elif token.type in (TokenType.MATH_FUNCTION, TokenType.TRIG_FUNCTION):
             return self.parse_math_function(token)
         elif token.type == TokenType.IDENTIFIER:
-            return self.parse_identifier()
+            return self.parse_postfix(self.parse_identifier())
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
             expr = self.parse_expression()

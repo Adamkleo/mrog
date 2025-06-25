@@ -1,5 +1,40 @@
 import math
 
+# Mapping of function names to their corresponding Python callables
+TRIG_FUNCTIONS_MAP = {
+    'sin': math.sin,
+    'cos': math.cos,
+    'tan': math.tan,
+    'csc': lambda x: 1 / math.sin(x),
+    'sec': lambda x: 1 / math.cos(x),
+    'cot': lambda x: 1 / math.tan(x),
+    'sinh': math.sinh,
+    'cosh': math.cosh,
+    'tanh': math.tanh,
+    'csch': lambda x: 1 / math.sinh(x),
+    'sech': lambda x: 1 / math.cosh(x),
+    'coth': lambda x: 1 / math.tanh(x),
+    'asin': math.asin,
+    'acos': math.acos,
+    'atan': math.atan,
+    'acsc': lambda x: math.asin(1 / x),
+    'asec': lambda x: math.acos(1 / x),
+    'acot': lambda x: math.atan(1 / x),
+    'asinh': math.asinh,
+    'acosh': math.acosh,
+    'atanh': math.atanh,
+    'acsch': lambda x: math.asinh(1 / x),
+    'asech': lambda x: math.acosh(1 / x),
+    'acoth': lambda x: math.atanh(1 / x),
+}
+
+MATH_FUNCTIONS_MAP = {
+    'exp': math.exp,
+    'sqrt': math.sqrt,
+    'ln': math.log,
+    'abs': abs,
+}
+
 class Interpreter:
     def __init__(self, semantic_analyzer):
         self.semantic_analyzer = semantic_analyzer
@@ -56,18 +91,40 @@ class Interpreter:
                 return left ** right
         elif node['type'] == 'MathFunction':
             argument = self.evaluate_expression(node['argument'], variable_values)
-            if node['function'] == 'log':
+            func_name = node['function']
+            if func_name == 'log':
                 base = self.evaluate_expression(node['base'], variable_values)
                 return math.log(argument, base)
-            elif node['function'] == 'abs':
-                return abs(argument)
-            elif node['function'] == 'ln':
-                return math.log(argument)
+            if func_name in MATH_FUNCTIONS_MAP:
+                return MATH_FUNCTIONS_MAP[func_name](argument)
+            if func_name in TRIG_FUNCTIONS_MAP:
+                return TRIG_FUNCTIONS_MAP[func_name](argument)
         elif node['type'] == 'FunctionCall':
             function_name = node['name']
             argument = self.evaluate_expression(node['argument'], variable_values)
             function_variable, expression = self.functions[function_name]
             return self.evaluate_expression(expression, {function_variable: argument})
+        elif node['type'] == 'Factorial':
+            operand = self.evaluate_expression(node['operand'], variable_values)
+            if isinstance(operand, (int, float)):
+                return math.factorial(int(operand))
+            return f"{self.expression_to_string(node['operand'], variable_values)}!"
+        elif node['type'] == 'Derivative':
+            func_name = node['function']
+            argument = self.evaluate_expression(node['argument'], variable_values)
+            var, expr = self.functions[func_name]
+            if isinstance(argument, (int, float)):
+                h = 1e-6
+                try:
+                    plus = self.evaluate_expression(expr, {var: argument + h})
+                    minus = self.evaluate_expression(expr, {var: argument - h})
+                    return (plus - minus) / (2 * h)
+                except Exception:
+                    plus = self.evaluate_expression(expr, {var: argument + h})
+                    minus = self.evaluate_expression(expr, {var: argument})
+                    return (plus - minus) / h
+            arg_str = self.expression_to_string(node['argument'], variable_values)
+            return f"{func_name}'({arg_str})"
 
     def get_function_string(self, function_name, argument):
         function_variable, expression = self.functions[function_name]
@@ -92,15 +149,9 @@ class Interpreter:
                 base = self.expression_to_string(expression['base'], variable_values)
                 arg = self.expression_to_string(expression['argument'], variable_values)
                 return f"log({base}, {arg})"
-            elif expression['function'] == 'abs':
+            elif expression['function'] in MATH_FUNCTIONS_MAP or expression['function'] in TRIG_FUNCTIONS_MAP:
                 arg = self.expression_to_string(expression['argument'], variable_values)
-                return f"abs({arg})"
-            elif expression['function'] == 'ln':
-                arg = self.expression_to_string(expression['argument'], variable_values)
-                return f"ln({arg})"
-            elif expression['function'] == 'sqrt':
-                arg = self.expression_to_string(expression['argument'], variable_values)
-                return f"sqrt({arg})"
+                return f"{expression['function']}({arg})"
         elif expression['type'] == 'Derivative':
             function = expression['function']
             arg = self.expression_to_string(expression['argument'], variable_values)
@@ -108,4 +159,7 @@ class Interpreter:
         elif expression['type'] == 'FunctionCall':
             arg = self.expression_to_string(expression['argument'], variable_values)
             return f"{expression['name']}({arg})"
+        elif expression['type'] == 'Factorial':
+            operand = self.expression_to_string(expression['operand'], variable_values)
+            return f"{operand}!"
 
