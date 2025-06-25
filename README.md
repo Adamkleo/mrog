@@ -2,10 +2,10 @@
 
 A Mathematical language inspired by Wolfram Alpha-inspired & Mathprog, written in Python.
 
-Currently working on correctly tokenizing and parsing expressions and error handling.
+Currently working on correctly tokenizing, parsing and evaluating expressions with error handling support.
 
 ## Features to be Added
-- [ ] Built-in functions
+- [x] Built-in functions
 - [ ] Matrices
 - [ ] Multi-variable functions
 - [ ] TBD
