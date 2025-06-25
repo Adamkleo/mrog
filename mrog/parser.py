@@ -66,16 +66,22 @@ class Parser:
 
         self.eat(TokenType.IDENTIFIER)
         self.eat(TokenType.LPAREN)
-        
-        function_variable = self.current_token.value
-        
-        self.eat(TokenType.IDENTIFIER)
+
+        function_variables = []
+        if self.current_token.type != TokenType.RPAREN:
+            function_variables.append(self.current_token.value)
+            self.eat(TokenType.IDENTIFIER)
+            while self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+                function_variables.append(self.current_token.value)
+                self.eat(TokenType.IDENTIFIER)
+
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.EQUAL)
 
         expression = self.parse_expression()
 
-        return {'type': 'FunctionDefinition', 'name': function_name, 'function_variable': function_variable, 'expression': expression}
+        return {'type': 'FunctionDefinition', 'name': function_name, 'function_variables': function_variables, 'expression': expression}
 
     def parse_expression(self):
         term = self.parse_term()
@@ -166,17 +172,22 @@ class Parser:
             self.functions_called[self.current_line].add(identifier)
             # Parse opening parenthesis of function call
             self.eat(TokenType.LPAREN)
-            # Get function call argument
-            arg = self.parse_expression()
-                    
+
+            args = []
+            if self.current_token.type != TokenType.RPAREN:
+                args.append(self.parse_expression())
+                while self.current_token.type == TokenType.COMMA:
+                    self.eat(TokenType.COMMA)
+                    args.append(self.parse_expression())
+
             # Parse closing parenthesis of function call
             self.eat(TokenType.RPAREN)
 
             if derivative:
-                return {'type': 'Derivative', 'function': identifier, 'argument': arg}
+                return {'type': 'Derivative', 'function': identifier, 'arguments': args}
 
             # Return function call node
-            return {'type': 'FunctionCall', 'name': identifier, 'argument': arg}
+            return {'type': 'FunctionCall', 'name': identifier, 'arguments': args}
         else:
 
             self.used_variables[self.current_line].add(identifier)
@@ -190,7 +201,12 @@ class Parser:
 
         if token.value == 'log':
             return self.parse_logarithm(token)
-        
+        if token.value == 'matrix':
+            self.eat(TokenType.LPAREN)
+            matrix = self.parse_matrix_literal()
+            self.eat(TokenType.RPAREN)
+            return {'type': 'Matrix', 'elements': matrix}
+
         self.eat(TokenType.LPAREN)
         argument = self.parse_expression()
         self.eat(TokenType.RPAREN)
@@ -204,3 +220,21 @@ class Parser:
         argument = self.parse_expression()
         self.eat(TokenType.RPAREN)
         return {'type': 'MathFunction', 'function': token.value, 'base': base, 'argument': argument}
+
+    def parse_matrix_literal(self):
+        matrix = []
+        self.eat(TokenType.LBRACKET)
+        while True:
+            self.eat(TokenType.LBRACKET)
+            row = [self.parse_expression()]
+            while self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+                row.append(self.parse_expression())
+            self.eat(TokenType.RBRACKET)
+            matrix.append(row)
+            if self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+            else:
+                break
+        self.eat(TokenType.RBRACKET)
+        return matrix

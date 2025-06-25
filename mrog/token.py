@@ -30,6 +30,8 @@ class TokenType(Enum):
     LPAREN = auto()  # Left Parenthesis '('
     RPAREN = auto()  # Right Parenthesis ')'
     COMMA = auto()   # Comma ','
+    LBRACKET = auto()  # Left Bracket '['
+    RBRACKET = auto()  # Right Bracket ']'
 
     # End of File
     EOF = auto()     # End of File

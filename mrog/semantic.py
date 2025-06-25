@@ -28,18 +28,19 @@ class SemanticAnalyzer:
     def analyze_FunctionDefinition(self, statement):
         # Get function details
         function_name = statement['name']
-        function_variable = statement['function_variable']
+        function_variables = statement['function_variables']
         expression = statement['expression']
 
-        # Check if the function variable is valid
-        if function_variable not in VARIABLES:
-            raise InvalidVariableError(function_variable, self.current_line)
+        # Check if the function variables are valid
+        for var in function_variables:
+            if var not in VARIABLES:
+                raise InvalidVariableError(var, self.current_line)
 
-        # Check if the function expression varriable matches the function variable
-        non_function_variables = VARIABLES.difference(set(function_variable))
+        # Check if the function expression variables match the function variables
+        non_function_variables = VARIABLES.difference(set(function_variables))
         for var in non_function_variables:
             if var in self.parser.used_variables[self.current_line]:
-                raise InvalidExpressionVariableError(self.current_line, function_name, var, function_variable)
+                raise InvalidExpressionVariableError(self.current_line, function_name, var, function_variables)
             
         # Check if any of the functions that are called in the current function expressions dont exist
         for function in self.parser.functions_called[self.current_line]:
@@ -47,7 +48,7 @@ class SemanticAnalyzer:
                 raise UndefinedFunctionError(self.current_line, function)
 
         # Add function to functions dictionary
-        function = (function_variable, expression)
+        function = (function_variables, expression)
         self.functions[function_name] = function
 
 
