@@ -50,23 +50,23 @@ class Interpreter:
 
     def handle_function_definition(self, node):
         function_name = node['name']
-        function_variable = node['function_variable']
+        function_variables = node['function_variables']
         expression = node['expression']
-        self.functions[function_name] = (function_variable, expression)
+        self.functions[function_name] = (function_variables, expression)
 
     def handle_print_statement(self, node):
         argument = node['argument']
         if argument['type'] == 'FunctionCall':
             function_name = argument['name']
-            arg = self.evaluate_expression(argument['argument'])
-            if isinstance(arg, (int, float)):
-                arg_to_print = int(arg) if arg % 1 == 0 else arg
+            args = [self.evaluate_expression(a) for a in argument['arguments']]
+            if all(isinstance(a, (int, float)) for a in args):
+                display_args = [int(a) if isinstance(a, float) and a % 1 == 0 else a for a in args]
                 result = self.evaluate_expression(argument)
-                print(f"{function_name}({arg_to_print}) = {result}")
+                args_str = ', '.join(str(a) for a in display_args)
+                print(f"{function_name}({args_str}) = {result}")
             else:
-                function_str = self.get_function_string(function_name, arg)
-                self.function_strings[function_name] = function_str
-                print(f"{function_name}({arg}) = {function_str}")
+                func_str = self.get_function_string(function_name, args)
+                print(f"{function_name}({', '.join(str(a) for a in args)}) = {func_str}")
         else:
             result = self.evaluate_expression(argument)
             print(result)
@@ -99,11 +99,14 @@ class Interpreter:
                 return MATH_FUNCTIONS_MAP[func_name](argument)
             if func_name in TRIG_FUNCTIONS_MAP:
                 return TRIG_FUNCTIONS_MAP[func_name](argument)
+        elif node['type'] == 'Matrix':
+            return [[self.evaluate_expression(elem, variable_values) for elem in row] for row in node['elements']]
         elif node['type'] == 'FunctionCall':
             function_name = node['name']
-            argument = self.evaluate_expression(node['argument'], variable_values)
-            function_variable, expression = self.functions[function_name]
-            return self.evaluate_expression(expression, {function_variable: argument})
+            arguments = [self.evaluate_expression(a, variable_values) for a in node['arguments']]
+            vars_, expression = self.functions[function_name]
+            env = {v: val for v, val in zip(vars_, arguments)}
+            return self.evaluate_expression(expression, env)
         elif node['type'] == 'Factorial':
             operand = self.evaluate_expression(node['operand'], variable_values)
             if isinstance(operand, (int, float)):
@@ -111,27 +114,37 @@ class Interpreter:
             return f"{self.expression_to_string(node['operand'], variable_values)}!"
         elif node['type'] == 'Derivative':
             func_name = node['function']
-            argument = self.evaluate_expression(node['argument'], variable_values)
-            var, expr = self.functions[func_name]
-            if isinstance(argument, (int, float)):
+            arguments = [self.evaluate_expression(a, variable_values) for a in node['arguments']]
+            vars_, expr = self.functions[func_name]
+            if all(isinstance(a, (int, float)) for a in arguments):
                 h = 1e-6
-                try:
-                    plus = self.evaluate_expression(expr, {var: argument + h})
-                    minus = self.evaluate_expression(expr, {var: argument - h})
-                    return (plus - minus) / (2 * h)
-                except Exception:
-                    plus = self.evaluate_expression(expr, {var: argument + h})
-                    minus = self.evaluate_expression(expr, {var: argument})
-                    return (plus - minus) / h
-            arg_str = self.expression_to_string(node['argument'], variable_values)
+                grads = []
+                for i, var in enumerate(vars_):
+                    plus_args = arguments.copy()
+                    minus_args = arguments.copy()
+                    plus_args[i] += h
+                    minus_args[i] -= h
+                    try:
+                        plus = self.evaluate_expression(expr, {v: val for v, val in zip(vars_, plus_args)})
+                        minus = self.evaluate_expression(expr, {v: val for v, val in zip(vars_, minus_args)})
+                        diff = self.matrix_subtract(plus, minus)
+                        grads.append(self.matrix_scalar_divide(diff, 2*h))
+                    except Exception:
+                        plus = self.evaluate_expression(expr, {v: val for v, val in zip(vars_, plus_args)})
+                        base = self.evaluate_expression(expr, {v: val for v, val in zip(vars_, arguments)})
+                        diff = self.matrix_subtract(plus, base)
+                        grads.append(self.matrix_scalar_divide(diff, h))
+                return grads[0] if len(grads) == 1 else grads
+            arg_str = ', '.join(self.expression_to_string(a, variable_values) for a in node['arguments'])
             return f"{func_name}'({arg_str})"
 
-    def get_function_string(self, function_name, argument):
-        function_variable, expression = self.functions[function_name]
-        if argument == function_variable:
+    def get_function_string(self, function_name, arguments):
+        vars_, expression = self.functions[function_name]
+        if arguments == vars_:
             return self.expression_to_string(expression)
         else:
-            return self.expression_to_string(expression, {function_variable: argument})
+            env = {v: arg for v, arg in zip(vars_, arguments)}
+            return self.expression_to_string(expression, env)
 
     def expression_to_string(self, expression, variable_values={}):
         if expression['type'] == 'Number':
@@ -154,12 +167,28 @@ class Interpreter:
                 return f"{expression['function']}({arg})"
         elif expression['type'] == 'Derivative':
             function = expression['function']
-            arg = self.expression_to_string(expression['argument'], variable_values)
-            return f"{function}'({arg})"
+            args = ', '.join(self.expression_to_string(a, variable_values) for a in expression['arguments'])
+            return f"{function}'({args})"
         elif expression['type'] == 'FunctionCall':
-            arg = self.expression_to_string(expression['argument'], variable_values)
-            return f"{expression['name']}({arg})"
+            args = ', '.join(self.expression_to_string(a, variable_values) for a in expression['arguments'])
+            return f"{expression['name']}({args})"
         elif expression['type'] == 'Factorial':
             operand = self.expression_to_string(expression['operand'], variable_values)
             return f"{operand}!"
+        elif expression['type'] == 'Matrix':
+            rows = []
+            for row in expression['elements']:
+                row_str = ', '.join(self.expression_to_string(e, variable_values) for e in row)
+                rows.append(f"[{row_str}]")
+            return '[' + ', '.join(rows) + ']'
+
+    def matrix_subtract(self, a, b):
+        if isinstance(a, list):
+            return [self.matrix_subtract(x, y) for x, y in zip(a, b)]
+        return a - b
+
+    def matrix_scalar_divide(self, a, scalar):
+        if isinstance(a, list):
+            return [self.matrix_scalar_divide(x, scalar) for x in a]
+        return a / scalar
 

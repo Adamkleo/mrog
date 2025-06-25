@@ -6,7 +6,8 @@
 <built_in_function> ::= PRINT "(" <identifier> ")"
 
 
-<function_definition> ::= ID "(" ID ")" "=" <expression>
+<function_definition> ::= ID "(" <id_list> ")" "=" <expression>
+<id_list>           ::= ID ("," ID)*
 
 <expression>        ::= <term> <rest_expression>
 
@@ -32,15 +33,20 @@
                       | <identifier>
                       | <logarithm>
 
-<identifier>        ::= ID "(" <expression> ")"
-                      | ID "'" "(" <expression> ")" 
+<identifier>        ::= ID "(" <expression_list> ")"
+                      | ID "'" "(" <expression_list> ")"
                       | ID
+
+<expression_list>   ::= <expression> ("," <expression>)*
 
 <postfix_operator>  ::= "!" 
                       | ε
 
 <math_function>     ::= TRIG_FUNCTION
                       | MATH_FUNCTION
+
+<matrix>            ::= '[' <matrix_row> (',' <matrix_row>)* ']'
+<matrix_row>        ::= '[' <expression_list> ']'
 
 <logarithm>         ::= log '(' <expression> ',' <expression> ')' 
 
